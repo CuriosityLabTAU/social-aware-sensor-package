@@ -1,0 +1,11 @@
+float32[9] emotions
+float32[21] expressions
+float32[4] measurements
+Vec2[34] face_points
+float32 face_x_alignment
+float32 face_y_alignment
+float32 face_tracking_deltax
+float32 face_distance
+bool face_detected
+string tega_affect_msg
+bool attention_detected

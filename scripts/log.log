@@ -1,0 +1,12 @@
+xmapfile: fisheye_grid_xmap.pgm
+ymapfile: fisheye_grid_ymap.pgm
+ThetaS with crop 33
+Writing files
+
+Number of pixels total(from rows*cols): 819200
+Number of pixels written in file fisheye_grid_ymap.pgm: 819200
+
+
+Number of pixels total(from rows*cols): 819200
+Number of pixels written in file fisheye_grid_xmap.pgm: 819200
+
