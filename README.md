@@ -9,6 +9,17 @@ you can find the program at the link:
 https://github.com/raboof/dualfisheye2equirectangular
 you can create a mapping file for several cameras and resolutions.
 
+to use the microphone, you'll need to get permissions.
+For this:
+Add the user to plugdev group
+>> sudo usermod -a -G plugdev $USER
+
+create a new rule
+>> sudo gedit /etc/udev/rules.d/99-social.rules
+
+SUBSYSTEM=="usb", ATTR{idVendor}=="0fcf", ATTR{idProduct}=="1008", MODE="666", GROUP="plugdev"
+
+
 in order to analayze expressions you need to get the affectiva ros node
 https://www.affectiva.com/
 
