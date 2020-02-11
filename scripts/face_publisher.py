@@ -11,6 +11,29 @@ from threading import Thread
 image = None
 
 
+def find_devices():
+    devices_ = {}
+    index = 0
+    while True:
+        cap = cv2.VideoCapture(index)
+        ret, frame = cap.read()
+        if not ret:
+            break
+        else:
+            print(index, frame.shape)
+            devices_[index] = frame.shape
+
+        cap.release()
+        index += 1
+    print('**** devices ****')
+    print(devices_)
+    # find 360
+    for i, d in devices_.items():
+        if d[1] == 1280:
+            return i
+    return devices_.keys()[0]
+
+
 def thread1_take_pictures():
     # this function takes pictures
     # each picture is saved to VideoWriter and display in a new window
@@ -21,8 +44,11 @@ def thread1_take_pictures():
     subprocess.call("./projection -x fisheye_grid_xmap.pgm -y fisheye_grid_ymap.pgm -h 640 -w 1280 -r 640 -c 1280 -b 33 -m thetas", shell=True)
     # create the mapping files from dualfisheye to rectungaular -h 640 -w 1280 -r 640 -c 1280 -b 29  or 960 1920 960 1920 51
 
-    out = cv2.VideoWriter('../output/outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 2, (1280, 640))
-    cap = cv2.VideoCapture(1)
+    #out = cv2.VideoWriter('outpy.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 2, (1280, 640))
+    the_device = find_devices()
+    print(the_device)
+    cap = cv2.VideoCapture(the_device)
+
 
     try:
         while True:
@@ -43,6 +69,7 @@ def thread1_take_pictures():
             # wait until the process is ending
 
             image2 = cv2.imread('fixed.png')
+            # image2 = cv2.imread('captured.png')
             # read the equirectangular image
 
             image = image2
@@ -52,7 +79,7 @@ def thread1_take_pictures():
             k = cv2.waitKey(1)
             # display live
 
-            out.write(image2)
+            # out.write(image2)
             # recording for video
 
             if k == ord('q'):
@@ -88,6 +115,7 @@ def rospy_main_thread():
         return faces
 
     pub = rospy.Publisher('/usb_cam/image_raw', Image, queue_size=1)
+    img_pub = rospy.Publisher('/full_image', Image, queue_size=1)
     rospy.init_node('Camera_Publisher', anonymous=True)
 
     rate = rospy.Rate(40)  # 10hzro
@@ -98,6 +126,7 @@ def rospy_main_thread():
         if image is None:
             continue
         image2 = image
+        img_pub.publish(bridge.cv2_to_imgmsg(image2, "bgr8"))
         image = None
 
         found_faces = faces_detection(image2)

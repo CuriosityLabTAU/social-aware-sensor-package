@@ -8,9 +8,14 @@ pubspeaker = rospy.Publisher("/conc_speaker", String, queue_size=1)
 who_look_at_who = {}
 who_look_at_who_mat = [[0]]
 persons = ['0']
-talking_persons = [0]
-talking_persons_x = [0]
-talking_output = [0]
+talking_persons = {
+    0: {
+        'pos': -1,
+        'count': 0
+    }
+}
+
+
 def callback_conc_data(msg):
     global who_look_at_who
 
@@ -18,7 +23,6 @@ def callback_conc_data(msg):
     names = str(msg).split(" ")
     person_id = (names[2].split(":"))[1]
     look_at_person = (names[5].split(":"))[1]
-
 
     if person_id not in persons:
         persons.append(person_id)
@@ -31,39 +35,37 @@ def callback_conc_data(msg):
 
     pubcamera.publish(str(who_look_at_who_mat))
 
+
 def callback_msg(msg):
-    print('======= send msg', str(msg))
     if str(msg)[-1] == 'C':
         for person in range(len(who_look_at_who_mat)):
             for index in range(len(persons)):
                 who_look_at_who_mat[person][index] = 0
     elif str(msg)[-1] == 'R':
-        for person in range(len(talking_persons)):
-            talking_persons[person] = 0
+        for id, person in talking_persons.items():
+            person['count'] = 0
 
 
-
-def callback_ReSpeaker_msg(msg):
+def callback_ReSpeaker_msg(msg): # output is a list of pos_count for each person
     d = json.loads(str(msg)[6:])
-    if len(talking_persons) <= d['person_id']:
-        talking_persons.append(0)
-        talking_persons_x.append(0)
-        talking_output.append(0)
-    talking_persons[d['person_id']] += 1
-    talking_persons_x[d['person_id']] = d['x']
-    talking_output[d['person_id']] = "%s_%s" % (str(talking_persons_x[d['person_id']]), str(talking_persons[d['person_id']]))
-    pubspeaker.publish(str(talking_output))
-
+    if d['PersonID'] not in talking_persons:
+        talking_persons[d['PersonID']] = {
+            'pos': d['x'],
+            'count': 0
+        }
+    talking_persons[d['PersonID']]['count'] += 1
+    pubspeaker.publish(json.dumps(talking_persons))
 
 
 def main():
-    rospy.init_node('make_conclusion', anonymous=True)
+    rospy.init_node('omer_get_conc', anonymous=True)
     rospy.Subscriber("/send_msg", String, callback_msg)
-    rospy.Subscriber("/send_data", String, callback_conc_data)
-    rospy.Subscriber("/send_speaker_data", String, callback_ReSpeaker_msg)
+    rospy.Subscriber("/omer_data", String, callback_conc_data)
+    rospy.Subscriber("/omer_speaker_data", String, callback_ReSpeaker_msg)
     r = rospy.Rate(3)
     while not rospy.is_shutdown():
         r.sleep()
+
 
 if __name__ == '__main__':
     try:
