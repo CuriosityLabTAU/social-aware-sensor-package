@@ -13,6 +13,7 @@ plots = {}
 pub = rospy.Publisher("/send_data", String, queue_size=1)
 pub2 = rospy.Publisher("/send_speaker_data", String, queue_size=1)
 
+
 def callback_affdex_data(msg):
     global new_data, faces, plots, pub
     face_index = len(faces)

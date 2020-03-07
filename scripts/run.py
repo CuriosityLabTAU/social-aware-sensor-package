@@ -16,7 +16,9 @@ def main():
 
         process2 = subprocess.Popen("python aff_sub.py",  shell=True)
         #subscriber to affectiva and respeaker, publish all data to "/omer_data"
-        process25 = subprocess.Popen("python conc.py", shell=True)
+
+        # TODO CHANGE GOREN
+        # process25 = subprocess.Popen("python conc.py", shell=True)
         # subscriber to /omer_data publish all data to "/omer_conc"
 
         if camera_or_rosbag == 1:

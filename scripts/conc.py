@@ -48,20 +48,20 @@ def callback_msg(msg):
 
 def callback_ReSpeaker_msg(msg): # output is a list of pos_count for each person
     d = json.loads(str(msg)[6:])
-    if d['PersonID'] not in talking_persons:
-        talking_persons[d['PersonID']] = {
+    if d['person_id'] not in talking_persons:
+        talking_persons[d['person_id']] = {
             'pos': d['x'],
             'count': 0
         }
-    talking_persons[d['PersonID']]['count'] += 1
+    talking_persons[d['person_id']]['count'] += 1
     pubspeaker.publish(json.dumps(talking_persons))
 
 
 def main():
-    rospy.init_node('omer_get_conc', anonymous=True)
+    rospy.init_node('get_conc', anonymous=True)
     rospy.Subscriber("/send_msg", String, callback_msg)
-    rospy.Subscriber("/omer_data", String, callback_conc_data)
-    rospy.Subscriber("/omer_speaker_data", String, callback_ReSpeaker_msg)
+    rospy.Subscriber("/send_data", String, callback_conc_data)
+    rospy.Subscriber("/send_speaker_data", String, callback_ReSpeaker_msg)
     r = rospy.Rate(3)
     while not rospy.is_shutdown():
         r.sleep()

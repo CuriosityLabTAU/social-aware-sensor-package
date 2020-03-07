@@ -1,23 +1,29 @@
 #!/usr/bin/env python
-from tuning import Tuning
-import usb.core
-import usb.util
 import rospy
+from subprocess import Popen, PIPE
 from std_msgs.msg import Int32
 
-dev = usb.core.find(idVendor=0x2886, idProduct=0x0018)
+sudo_password = '1234567'
+command = 'python microphone_tuning.py'.split()
+
+
+def read_microphone():
+    p = Popen(['sudo', '-S'] + command, stdin=PIPE, stderr=PIPE, universal_newlines=True, stdout=PIPE)
+    (output, error) = p.communicate(sudo_password + '\n')
+    return output
+
 
 def respeaker():
-    global dev
     pub = rospy.Publisher('ReSpeaker', Int32, queue_size=1)
     rospy.init_node('ReSpeaker_Pub', anonymous=True)
-    mic_tuning = Tuning(dev)
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         try:
-            if mic_tuning.is_voice() == 1:
-                direction_str = (360-mic_tuning.direction)*1280/360
+            str_mic = read_microphone()
+            if len(str_mic) > 0: # nothing is recieved
+                direction_str = int(str_mic)
                 pub.publish(direction_str)
+                print(direction_str)
         except KeyboardInterrupt:
             break
         rate.sleep()
@@ -29,3 +35,4 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         print "Turn on Microphone"
         pass
+
