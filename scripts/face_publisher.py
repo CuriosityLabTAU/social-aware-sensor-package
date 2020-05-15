@@ -7,8 +7,12 @@ import logging
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from threading import Thread
+import pyscreenshot as ImageGrab
+import threading
+
 
 image = None
+input_device = 'zoom' # '360camera'
 
 
 def find_devices():
@@ -94,6 +98,16 @@ def thread1_take_pictures():
     cv2.destroyAllWindows()
 
 
+def thread2_take_pictures():
+    global image
+
+    while(True):
+        image2 = ImageGrab.grab()
+        image = np.array(image2)
+        image2.save('fixed.png')
+        threading._sleep(0.5)
+
+
 def rospy_main_thread():
     # this function takes the pending "last_picture"
     # it detect and crop faces and publish them to "/usb_cam/image_raw" topic which Affectiva will subscribe too and analyze
@@ -149,14 +163,17 @@ def rospy_main_thread():
 
             try:
                 pub.publish(image_message)  # publishing the faces images
-                print("Published")
             except CvBridgeError as e:
                 print(e)
             rate.sleep()
 
+
 def main():
     try:
-        f = Thread(target=thread1_take_pictures)
+        if input_device == '360camera':
+            f = Thread(target=thread1_take_pictures)
+        else:
+            f = Thread(target=thread2_take_pictures)
         f.daemon = True
         f.start()
         rospy_main_thread()
