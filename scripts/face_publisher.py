@@ -12,7 +12,7 @@ import threading
 
 
 image = None
-input_device = 'zoom' # '360camera'
+input_device = open('sensor_type.txt', 'r').read()
 
 
 def find_devices():
@@ -170,12 +170,16 @@ def rospy_main_thread():
 
 def main():
     try:
-        if input_device == '360camera':
+        if 'camera' in input_device:
             f = Thread(target=thread1_take_pictures)
-        else:
+        elif 'zoom' in input_device:
             f = Thread(target=thread2_take_pictures)
-        f.daemon = True
-        f.start()
+        else:
+            f = None
+
+        if f:
+            f.daemon = True
+            f.start()
         rospy_main_thread()
     except:
         print("not publishing")
